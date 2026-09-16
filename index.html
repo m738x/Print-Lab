@@ -30,7 +30,7 @@
     
     .logo { font-size: 1.4rem; font-weight: bold; color: #fff; }
     .logo span { color: var(--accent-color); }
-    .user-status { font-size: 0.9rem; color: #a8a8b3; }
+    .user-status { font-size: 0.85rem; color: #a8a8b3; background: #25252b; padding: 0.3rem 0.6rem; border-radius: 4px; }
     .btn-switch { background: var(--border-color); color: #fff; border: 1px solid var(--border-color); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; transition: 0.2s; }
     .btn-switch:hover { border-color: var(--accent-color); }
 
@@ -44,7 +44,9 @@
     }
     .admin-panel h3 { color: var(--accent-color); margin-bottom: 1rem; }
     .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
-    input, textarea { background: #121214; border: 1px solid var(--border-color); color: #fff; padding: 0.6rem; border-radius: 4px; }
+    input, textarea { background: #121214; border: 1px solid var(--border-color); color: #fff; padding: 0.6rem; border-radius: 4px; font-size: 1rem; }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent-color); }
+    
     .btn-submit { background: var(--accent-color); color: #000; border: none; padding: 0.7rem; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; width: 100%; }
     .btn-submit:hover { opacity: 0.9; }
 
@@ -57,13 +59,13 @@
     .product-card:hover { transform: translateY(-4px); border-color: var(--accent-color); }
     .product-img { width: 100%; height: 180px; object-fit: cover; background: #25252b; }
     .product-info { padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; }
-    .product-title { font-size: 1.1rem; margin-bottom: 0.4rem; }
+    .product-title { font-size: 1.1rem; margin-bottom: 0.4rem; font-weight: 600; }
     .product-price { color: var(--accent-color); font-weight: bold; font-size: 1.2rem; margin-bottom: 0.8rem; }
-    .btn-delete { background: var(--danger-color); color: #fff; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer; margin-top: auto; }
+    .btn-delete { background: var(--danger-color); color: #fff; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer; margin-top: auto; font-weight: bold; }
 
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.75);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       display: flex; justify-content: center; align-items: center;
@@ -72,33 +74,25 @@
     
     .modal-box {
       background: var(--card-bg); border: 1px solid var(--border-color);
-      padding: 2rem; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;
+      padding: 2rem; border-radius: 8px; max-width: 450px; width: 90%; max-height: 90vh; overflow-y: auto;
       animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .fullscreen-modal-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      width: 90vw; height: 85vh;
-      border-radius: 12px;
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 2rem; padding: 2rem;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-      overflow: hidden;
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      width: 90vw; height: 85vh; border-radius: 12px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 2rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden;
       animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .modal-split-left {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
       background: #0d0d0f; border-radius: 8px; overflow: hidden;
     }
     .modal-split-left img { width: 100%; height: 100%; object-fit: contain; }
 
-    .modal-split-right {
-      display: flex; flex-direction: column; justify-content: space-between;
-      height: 100%; overflow-y: auto;
-    }
+    .modal-split-right { display: flex; flex-direction: column; justify-content: space-between; height: 100%; overflow-y: auto; }
 
     .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
     .btn-secondary { background: var(--border-color); color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer; flex: 1; }
@@ -119,8 +113,8 @@
     <div class="logo">Print <span>Lab</span></div>
     <div style="display: flex; align-items: center; gap: 0.8rem;">
       <button class="btn-switch" onclick="openCartModal()">🛒 Cart (<span id="cart-count">0</span>)</button>
-      <span id="role-indicator" class="user-status">Browsing as Guest</span>
-      <button class="btn-switch" onclick="openRoleModal()">Switch Role</button>
+      <span id="role-indicator" class="user-status">Not Logged In</span>
+      <button class="btn-switch" onclick="openLoginModal()">Login / Account</button>
     </div>
   </header>
 
@@ -138,14 +132,13 @@
         </div>
         <div class="form-group">
           <label>Description</label>
-          <textarea id="prod-desc" rows="3" required placeholder="Material specifications, layer height, color choices..."></textarea>
+          <textarea id="prod-desc" rows="3" required placeholder="Material specs, layer height, colors..."></textarea>
         </div>
         <div class="form-group">
-          <label>Upload Image (from local storage)</label>
+          <label>Upload Image</label>
           <input type="file" id="prod-img" accept="image/*" required>
         </div>
-        <button type="submit" class="btn-submit">Add Product to Store</button>
-        <button type="button" class="btn-delete" style="width: 100%; margin-top: 1rem;" onclick="resetAllProducts()">⚠️ Reset Storage Memory (If Storage Fails)</button>
+        <button type="submit" class="btn-submit">Add Product</button>
       </form>
     </div>
 
@@ -153,17 +146,29 @@
     <div id="product-grid" class="product-grid"></div>
   </div>
 
-  <div id="role-modal" class="modal-overlay">
-    <div class="modal-box" style="text-align: center;">
-      <h2>Welcome</h2>
-      <p style="margin-bottom: 1.5rem; color: #a8a8b3;">Please select your role to continue:</p>
-      <div class="modal-actions">
-        <button class="btn-secondary" onclick="selectRole('guest')">Consumer (Guest)</button>
-        <button class="btn-primary" onclick="selectRole('owner')">Store Owner</button>
-      </div>
+  <!-- Account Login Modal -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h2 style="margin-bottom: 0.5rem; text-align: center;">Account Login</h2>
+      <p style="color: #a8a8b3; font-size: 0.9rem; margin-bottom: 1.5rem; text-align: center;">Please enter your email to continue</p>
+      
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="login-email" required placeholder="name@example.com" oninput="checkLoginEmail()">
+        </div>
+        
+        <div id="pass-group" class="form-group hidden">
+          <label style="color: var(--accent-color);">Owner Password Required</label>
+          <input type="password" id="login-pass" placeholder="Enter owner password">
+        </div>
+
+        <button type="submit" class="btn-submit" style="margin-top: 1rem;">Log In</button>
+      </form>
     </div>
   </div>
 
+  <!-- Product Detail Modal -->
   <div id="detail-modal" class="modal-overlay hidden">
     <div class="fullscreen-modal-box">
       <div class="modal-split-left">
@@ -186,6 +191,7 @@
     </div>
   </div>
 
+  <!-- Cart Modal -->
   <div id="cart-modal" class="modal-overlay hidden">
     <div class="modal-box">
       <h2>Your Shopping Cart</h2>
@@ -197,6 +203,7 @@
     </div>
   </div>
 
+  <!-- Checkout Step 1 -->
   <div id="checkout-step1-modal" class="modal-overlay hidden">
     <div class="modal-box">
       <h2>Payment Instruction</h2>
@@ -210,6 +217,7 @@
     </div>
   </div>
 
+  <!-- Checkout Step 2 -->
   <div id="checkout-step2-modal" class="modal-overlay hidden">
     <div class="modal-box">
       <h2>Confirm Order</h2>
@@ -234,11 +242,12 @@
     </div>
   </div>
 
+  <!-- Order Submitted Modal -->
   <div id="final-modal" class="modal-overlay hidden">
     <div class="modal-box" style="text-align: center;">
       <h2 style="color: var(--accent-color);">Order Submitted!</h2>
       <p style="margin: 1.5rem 0; line-height: 1.5;">
-        Thank you, your order should be ready in <strong>2-5 days</strong>. If not, all money will be refunded (payment must be confirmed before print).
+        Thank you! Your order will be ready in <strong>2-5 days</strong>. If not, all money will be refunded (payment must be confirmed before print).
       </p>
       <button class="btn-primary" style="width:100%;" onclick="closeModal('final-modal')">Done</button>
     </div>
@@ -246,43 +255,82 @@
 
   <script>
     const OWNER_EMAIL = "shafaynext@gmail.com";
+    const ALLOWED_PASSWORDS = ["159357", "boing737max"];
+
     let isOwner = false;
-    let products = JSON.parse(localStorage.getItem('store_products')) || [];
+    let currentUserEmail = "";
+
+    // DEFAULT PRODUCTS (Visible globally to ALL visitors on ANY device)
+    const defaultProducts = [
+      {
+        id: 101,
+        title: "Phone Stand Holder",
+        price: "10.00",
+        desc: "Sturdy desktop phone stand. Ergonomic viewing angle.",
+        image: "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=400&q=80"
+      }
+    ];
+
+    let products = JSON.parse(localStorage.getItem('store_products')) || defaultProducts;
     let cart = JSON.parse(localStorage.getItem('store_cart')) || [];
     let selectedProduct = null;
 
     window.onload = function() {
+      const savedUser = localStorage.getItem('logged_user');
+      if (savedUser) {
+        currentUserEmail = savedUser;
+        if (savedUser === OWNER_EMAIL) {
+          isOwner = true;
+          document.getElementById('admin-panel').style.display = "block";
+        }
+        document.getElementById('role-indicator').innerText = currentUserEmail;
+        closeModal('login-modal');
+      }
       renderProducts();
       updateCartUI();
     };
 
-    function openRoleModal() {
-      document.getElementById('role-modal').classList.remove('hidden');
+    function openLoginModal() {
+      document.getElementById('login-modal').classList.remove('hidden');
     }
 
-    function selectRole(role) {
-      if (role === 'owner') {
-        const email = prompt("Please enter your owner Gmail account:");
-        if (email && email.trim().toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+    function checkLoginEmail() {
+      const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
+      const passGroup = document.getElementById('pass-group');
+      if (emailInput === OWNER_EMAIL) {
+        passGroup.classList.remove('hidden');
+      } else {
+        passGroup.classList.add('hidden');
+      }
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value.trim().toLowerCase();
+      const pass = document.getElementById('login-pass').value;
+
+      if (email === OWNER_EMAIL) {
+        if (ALLOWED_PASSWORDS.includes(pass)) {
           isOwner = true;
-          document.getElementById('role-indicator').innerText = "Logged in as Owner (" + OWNER_EMAIL + ")";
+          currentUserEmail = email;
+          localStorage.setItem('logged_user', email);
+          document.getElementById('role-indicator').innerText = "Owner (" + email + ")";
           document.getElementById('admin-panel').style.display = "block";
+          closeModal('login-modal');
           alert("Welcome back, Owner!");
         } else {
-          alert("Unauthorized email address. Defaulting to Guest mode.");
-          setGuestMode();
+          alert("Incorrect owner password!");
+          return;
         }
       } else {
-        setGuestMode();
+        isOwner = false;
+        currentUserEmail = email;
+        localStorage.setItem('logged_user', email);
+        document.getElementById('role-indicator').innerText = email;
+        document.getElementById('admin-panel').style.display = "none";
+        closeModal('login-modal');
       }
-      closeModal('role-modal');
       renderProducts();
-    }
-
-    function setGuestMode() {
-      isOwner = false;
-      document.getElementById('role-indicator').innerText = "Browsing as Guest";
-      document.getElementById('admin-panel').style.display = "none";
     }
 
     function handleAddProduct(event) {
@@ -308,7 +356,6 @@
 
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            
             const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
 
             const newProduct = {
@@ -320,32 +367,19 @@
             };
 
             products.push(newProduct);
-            try {
-              localStorage.setItem('store_products', JSON.stringify(products));
-              renderProducts();
-              event.target.reset();
-              alert("Product saved permanently!");
-            } catch (err) {
-              alert("Storage limit reached! Click 'Reset Storage Memory' in the owner dashboard to clear old data.");
-            }
+            localStorage.setItem('store_products', JSON.stringify(products));
+            renderProducts();
+            event.target.reset();
+            alert("Product added locally!");
           };
         };
         reader.readAsDataURL(file);
       }
     }
 
-    function resetAllProducts() {
-      if (confirm("This will clear all saved products to free up storage space. Continue?")) {
-        localStorage.removeItem('store_products');
-        products = [];
-        renderProducts();
-        alert("Storage memory reset!");
-      }
-    }
-
     function deleteProduct(id, event) {
       event.stopPropagation();
-      if (confirm("Are you sure you want to remove this product?")) {
+      if (confirm("Remove this product?")) {
         products = products.filter(p => p.id !== id);
         localStorage.setItem('store_products', JSON.stringify(products));
         renderProducts();
@@ -357,7 +391,7 @@
       grid.innerHTML = '';
 
       if (products.length === 0) {
-        grid.innerHTML = '<p style="color: #a8a8b3; grid-column: 1/-1; text-align: center;">No products available at the moment.</p>';
+        grid.innerHTML = '<p style="color: #a8a8b3; grid-column: 1/-1; text-align: center;">No products available.</p>';
         return;
       }
 
@@ -371,7 +405,7 @@
           <div class="product-info">
             <div class="product-title">${p.title}</div>
             <div class="product-price">${p.price} AED</div>
-            ${isOwner ? `<button class="btn-delete" onclick="deleteProduct(${p.id}, event)">Remove Item</button>` : ''}
+            ${isOwner ? `<button class="btn-delete" onclick="deleteProduct(${p.id}, event)">Delete Item</button>` : ''}
           </div>
         `;
         grid.appendChild(card);
@@ -425,6 +459,11 @@
     }
 
     function startCheckout() {
+      if (!currentUserEmail) {
+        alert("Please log in first to make a purchase.");
+        openLoginModal();
+        return;
+      }
       closeModal('detail-modal');
       document.getElementById('checkout-step1-modal').classList.remove('hidden');
     }
@@ -446,11 +485,12 @@
       submitBtn.disabled = true;
 
       const formData = new FormData();
+      formData.append('Customer Email', currentUserEmail);
+      formData.append('Customer Name', name);
       formData.append('Product Title', selectedProduct.title);
       formData.append('Quantity', qty);
       formData.append('Unit Price', selectedProduct.price + " AED");
       formData.append('Total Paid Confirmed', payConfirm + " AED");
-      formData.append('Customer Name', name);
       formData.append('_subject', `New 3D Print Order: ${selectedProduct.title} from ${name}`);
       formData.append('_captcha', 'false');
 
@@ -468,7 +508,7 @@
       .catch(error => {
         submitBtn.innerText = "Submit Order";
         submitBtn.disabled = false;
-        alert("Failed to submit order automatically. Please check your internet connection.");
+        alert("Submission failed. Check your internet connection.");
       });
     }
   </script>
