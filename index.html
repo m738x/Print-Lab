@@ -11,9 +11,9 @@
 
   <style>
     :root {
-      --bg-color: #0b0c10;
-      --card-bg: rgba(21, 24, 33, 0.92);
-      --card-hover: rgba(30, 34, 48, 0.95);
+      --bg-color: #07080c;
+      --card-bg: rgba(18, 20, 29, 0.94);
+      --card-hover: rgba(28, 32, 46, 0.96);
       --accent-grad: linear-gradient(135deg, #00e676, #00b0ff);
       --accent-solid: #00e676;
       --cyan-accent: #00b0ff;
@@ -24,19 +24,29 @@
       --text-muted: #a0a7b5;
       --border-color: rgba(255, 255, 255, 0.12);
       --danger-color: #ff4757;
-      --glass-bg: rgba(15, 17, 25, 0.85);
+      --glass-bg: rgba(12, 14, 22, 0.88);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     
-    /* Animated Gradient Background: Pink -> Purple -> Blue -> Red */
+    /* Dark Base + Semi-Transparent Animated Overlay (Pink -> Purple -> Blue -> Red) */
     body { 
-      background: linear-gradient(-45deg, #ff2a85, #9c27b0, #00b0ff, #ff4757);
-      background-size: 400% 400%;
-      animation: gradientBG 14s ease infinite;
+      background-color: var(--bg-color);
       color: var(--text-main); 
       padding-bottom: 4rem;
       min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: linear-gradient(-45deg, rgba(255, 42, 133, 0.28), rgba(156, 39, 176, 0.28), rgba(0, 176, 255, 0.28), rgba(255, 71, 87, 0.28));
+      background-size: 400% 400%;
+      animation: gradientBG 14s ease infinite;
+      z-index: -1;
+      pointer-events: none;
     }
 
     @keyframes gradientBG {
@@ -52,8 +62,8 @@
     }
 
     @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.3); }
-      50% { box-shadow: 0 0 25px rgba(0, 230, 118, 0.6); }
+      0%, 100% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.25); }
+      50% { box-shadow: 0 0 25px rgba(0, 230, 118, 0.5); }
     }
 
     /* Header & Navigation */
@@ -81,7 +91,7 @@
 
     .user-status { 
       font-size: 0.85rem; color: #fff; 
-      background: rgba(0,0,0,0.4); padding: 0.4rem 0.8rem; border-radius: 20px;
+      background: rgba(0,0,0,0.5); padding: 0.4rem 0.8rem; border-radius: 20px;
       border: 1px solid var(--border-color);
     }
 
@@ -110,10 +120,10 @@
     /* Main Layout */
     .container { max-width: 1140px; margin: 2.5rem auto; padding: 0 1.2rem; }
     .section-header { 
-      margin-bottom: 2rem; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      margin-bottom: 2rem; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
     }
     .section-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
-    .section-subtitle { color: #e0e6ed; margin-top: 0.4rem; font-size: 1rem; }
+    .section-subtitle { color: #d0d7de; margin-top: 0.4rem; font-size: 1rem; }
 
     /* Admin Panel */
     .admin-panel {
@@ -128,7 +138,7 @@
     .form-group { margin-bottom: 1.1rem; display: flex; flex-direction: column; gap: 0.4rem; }
     label { font-size: 0.85rem; font-weight: 700; color: #d0d7de; text-transform: uppercase; letter-spacing: 0.5px; }
     input, textarea { 
-      background: rgba(10, 12, 18, 0.8); border: 1px solid var(--border-color); 
+      background: rgba(10, 12, 18, 0.85); border: 1px solid var(--border-color); 
       color: #fff; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.95rem; 
       transition: border-color 0.2s;
     }
@@ -159,7 +169,7 @@
     .product-card:hover { 
       transform: translateY(-6px); 
       border-color: rgba(0, 230, 118, 0.5); 
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
       background: var(--card-hover);
     }
 
@@ -212,24 +222,24 @@
     /* Modals */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(5, 6, 10, 0.82);
+      background: rgba(3, 4, 7, 0.88);
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       display: flex; justify-content: center; align-items: center;
       z-index: 100; opacity: 1; transition: opacity 0.25s ease;
     }
     
     .modal-box {
-      background: rgba(18, 20, 29, 0.95); border: 1px solid var(--border-color);
+      background: rgba(16, 18, 26, 0.96); border: 1px solid var(--border-color);
       padding: 2rem; border-radius: 16px; max-width: 480px; width: 92%; max-height: 90vh; overflow-y: auto;
       animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
     }
     
     .fullscreen-modal-box {
-      background: rgba(18, 20, 29, 0.95); border: 1px solid var(--border-color);
+      background: rgba(16, 18, 26, 0.96); border: 1px solid var(--border-color);
       width: 92vw; max-width: 1000px; height: 85vh; border-radius: 18px;
       display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2rem; padding: 2.2rem;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.8); overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.9); overflow: hidden;
       animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -266,7 +276,7 @@
     /* Quantity Controls */
     .qty-picker {
       display: inline-flex; align-items: center; gap: 0.5rem;
-      background: rgba(0,0,0,0.4); border: 1px solid var(--border-color);
+      background: rgba(0,0,0,0.5); border: 1px solid var(--border-color);
       padding: 0.3rem 0.6rem; border-radius: 8px;
     }
     .qty-btn {
@@ -481,6 +491,10 @@
         <div class="form-group">
           <label>Your Full Name</label>
           <input type="text" id="cust-name" required placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp Number <span style="text-transform: none; opacity: 0.7; font-weight: normal;">(Optional)</span></label>
+          <input type="tel" id="cust-whatsapp" placeholder="e.g., +971 50 123 4567">
         </div>
         <div class="form-group">
           <label>Order Item Summary</label>
@@ -901,6 +915,7 @@
       event.preventDefault();
       const email = document.getElementById('cust-email').value;
       const name = document.getElementById('cust-name').value;
+      const whatsapp = document.getElementById('cust-whatsapp').value;
       const itemsSummary = document.getElementById('cust-items-summary').value;
       const payConfirm = document.getElementById('cust-pay').value;
       const submitBtn = document.getElementById('btn-order-submit');
@@ -911,6 +926,9 @@
       const formData = new FormData();
       formData.append('Customer Email', email);
       formData.append('Customer Full Name', name);
+      if (whatsapp.trim() !== "") {
+        formData.append('Customer WhatsApp (Optional)', whatsapp);
+      }
       formData.append('Ordered Items', itemsSummary);
       formData.append('Total Payment Required', payConfirm);
       formData.append('_subject', `New 3D Print Order from ${name}`);
