@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Print Lab | 3D Printing Store</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
   <style>
     :root {
       --bg-color: #121214;
@@ -138,7 +143,7 @@
           <label>Upload Image</label>
           <input type="file" id="prod-img" accept="image/*" required>
         </div>
-        <button type="submit" class="btn-submit">Add Product</button>
+        <button type="submit" id="btn-add-prod" class="btn-submit">Add Product to Store</button>
       </form>
     </div>
 
@@ -254,24 +259,25 @@
   </div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCztdHa4nbFm-4myP-g_kVDgnF1wqBGTXc",
+      authDomain: "pirint-lab.firebaseapp.com",
+      databaseURL: "https://pirint-lab-default-rtdb.firebaseio.com",
+      projectId: "pirint-lab",
+      storageBucket: "pirint-lab.firebasestorage.app",
+      messagingSenderId: "758758939476",
+      appId: "1:758758939476:web:6524190b95ade05ab186c1"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     const OWNER_EMAIL = "shafaynext@gmail.com";
     const ALLOWED_PASSWORDS = ["159357", "boing737max"];
 
     let isOwner = false;
     let currentUserEmail = "";
-
-    // DEFAULT PRODUCTS (Visible globally to ALL visitors on ANY device)
-    const defaultProducts = [
-      {
-        id: 101,
-        title: "Phone Stand Holder",
-        price: "10.00",
-        desc: "Sturdy desktop phone stand. Ergonomic viewing angle.",
-        image: "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=400&q=80"
-      }
-    ];
-
-    let products = JSON.parse(localStorage.getItem('store_products')) || defaultProducts;
+    let products = [];
     let cart = JSON.parse(localStorage.getItem('store_cart')) || [];
     let selectedProduct = null;
 
@@ -286,7 +292,19 @@
         document.getElementById('role-indicator').innerText = currentUserEmail;
         closeModal('login-modal');
       }
-      renderProducts();
+
+      // Live syncing products from Firebase across all devices
+      db.ref('products').on('value', (snapshot) => {
+        const data = snapshot.val();
+        products = [];
+        if (data) {
+          Object.keys(data).forEach(key => {
+            products.push({ id: key, ...data[key] });
+          });
+        }
+        renderProducts();
+      });
+
       updateCartUI();
     };
 
@@ -335,6 +353,10 @@
 
     function handleAddProduct(event) {
       event.preventDefault();
+      const btn = document.getElementById('btn-add-prod');
+      btn.innerText = "Saving to Database...";
+      btn.disabled = true;
+
       const title = document.getElementById('prod-title').value;
       const price = parseFloat(document.getElementById('prod-price').value).toFixed(2);
       const desc = document.getElementById('prod-desc').value;
@@ -358,19 +380,21 @@
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
 
-            const newProduct = {
-              id: Date.now(),
+            db.ref('products').push({
               title: title,
               price: price,
               desc: desc,
               image: compressedDataUrl
-            };
-
-            products.push(newProduct);
-            localStorage.setItem('store_products', JSON.stringify(products));
-            renderProducts();
-            event.target.reset();
-            alert("Product added locally!");
+            }).then(() => {
+              btn.innerText = "Add Product to Store";
+              btn.disabled = false;
+              event.target.reset();
+              alert("Product added live to ALL devices worldwide!");
+            }).catch(err => {
+              btn.innerText = "Add Product to Store";
+              btn.disabled = false;
+              alert("Database Error: Make sure your Firebase Realtime Database is created and set to Test Mode.");
+            });
           };
         };
         reader.readAsDataURL(file);
@@ -379,10 +403,10 @@
 
     function deleteProduct(id, event) {
       event.stopPropagation();
-      if (confirm("Remove this product?")) {
-        products = products.filter(p => p.id !== id);
-        localStorage.setItem('store_products', JSON.stringify(products));
-        renderProducts();
+      if (confirm("Permanently delete this product from all devices?")) {
+        db.ref('products/' + id).remove().then(() => {
+          alert("Product removed globally!");
+        });
       }
     }
 
@@ -391,7 +415,7 @@
       grid.innerHTML = '';
 
       if (products.length === 0) {
-        grid.innerHTML = '<p style="color: #a8a8b3; grid-column: 1/-1; text-align: center;">No products available.</p>';
+        grid.innerHTML = '<p style="color: #a8a8b3; grid-column: 1/-1; text-align: center;">No products available at the moment.</p>';
         return;
       }
 
@@ -405,7 +429,7 @@
           <div class="product-info">
             <div class="product-title">${p.title}</div>
             <div class="product-price">${p.price} AED</div>
-            ${isOwner ? `<button class="btn-delete" onclick="deleteProduct(${p.id}, event)">Delete Item</button>` : ''}
+            ${isOwner ? `<button class="btn-delete" onclick="deleteProduct('${p.id}', event)">Delete Item</button>` : ''}
           </div>
         `;
         grid.appendChild(card);
