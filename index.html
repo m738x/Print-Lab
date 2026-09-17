@@ -1,176 +1,647 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pirint Lab | Custom 3D Printing</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Print Lab | 3D Printing Store</title>
   
+  <link rel="stylesheet" href="style.css">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+ 
 </head>
 <body>
 
   <header>
-    <div class="logo">PIRINT<span>LAB</span></div>
-    <div class="nav-actions">
-      <span id="role-indicator">Guest</span>
-      <button class="btn-nav" onclick="openWishlistModal()">❤️ (<span id="wishlist-count">0</span>)</button>
-      <button class="btn-nav" onclick="openCartModal()">🛒 (<span id="cart-count">0</span>)</button>
+    <div class="logo">
+      <span>⚡ Print</span><span style="color:#fff;">Lab</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-nav" onclick="openWishlistModal()">
+        ❤️ <span class="badge badge-wishlist" id="wishlist-count">0</span>
+      </button>
+      <button class="btn-nav" onclick="openCartModal()">
+        🛒 <span class="badge" id="cart-count">0</span>
+      </button>
+      <span id="role-indicator" class="user-status">Not Logged In</span>
       <button class="btn-nav" onclick="openLoginModal()">Account</button>
     </div>
   </header>
 
-  <!-- Admin Panel -->
-  <section id="admin-panel">
-    <h3>⚙️ Admin Panel - Publish New 3D Print</h3>
-    <form class="admin-form" onsubmit="handleAddProduct(event)">
-      <div>
-        <label>Title</label>
-        <input type="text" id="prod-title" required placeholder="e.g., Cyberpunk Helmet">
-      </div>
-      <div>
-        <label>Price (AED)</label>
-        <input type="number" id="prod-price" step="0.01" required placeholder="49.99">
-      </div>
-      <div>
-        <label>Image File</label>
-        <input type="file" id="prod-img" accept="image/*" required>
-      </div>
-      <div style="grid-column: 1/-1;">
-        <label>Description</label>
-        <textarea id="prod-desc" rows="2" placeholder="Material details, print resolution, infill..."></textarea>
-      </div>
-      <button type="submit" id="btn-add-prod" class="btn-primary" style="grid-column: 1/-1;">🚀 Publish Product Live</button>
-    </form>
-  </section>
+  <div class="container">
+    <div id="admin-panel" class="admin-panel">
+      <h3>🛠️ Owner Dashboard: Add Product</h3>
+      <form onsubmit="handleAddProduct(event)">
+        <div class="form-group">
+          <label>Product Title</label>
+          <input type="text" id="prod-title" required placeholder="e.g., Desk Cable Organizer">
+        </div>
+        <div class="form-group">
+          <label>Price per Unit in Dirhams (AED)</label>
+          <input type="number" step="0.5" id="prod-price" required placeholder="e.g., 10">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="prod-desc" rows="3" required placeholder="Material specs, layer height, colors..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Upload Image</label>
+          <input type="file" id="prod-img" accept="image/*" required>
+        </div>
+        <button type="submit" id="btn-add-prod" class="btn-submit">🚀 Publish Product Live</button>
+      </form>
+    </div>
 
-  <!-- Main Storefront -->
-  <main>
+    <div class="section-header">
+      <h2 class="section-title">Available 3D Prints</h2>
+      <p class="section-subtitle">Custom modeled & printed with precision in Ruwais</p>
+    </div>
+
     <div id="product-grid" class="product-grid"></div>
-  </main>
+  </div>
 
-  <!-- Login Modal -->
-  <div id="login-modal" class="modal hidden">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
-      <h2>Sign In</h2>
-      <form onsubmit="handleLogin(event)" style="margin-top: 1rem;">
-        <label>Email Address</label>
-        <input type="email" id="login-email" onkeyup="checkLoginEmail()" required placeholder="name@domain.com">
-        
-        <div id="pass-group" class="hidden">
-          <label>Owner Access Key</label>
-          <input type="password" id="login-pass" placeholder="Enter password">
+  <!-- Account Login Modal -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h2 style="margin-bottom: 0.4rem; text-align: center; font-weight: 800;">Welcome Back</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; text-align: center;">Enter your email to sign in or access owner controls</p>
+      
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="login-email" required placeholder="name@example.com" oninput="checkLoginEmail()">
         </div>
         
-        <button type="submit" class="btn-primary" style="width: 100%;">Continue</button>
+        <div id="pass-group" class="form-group hidden">
+          <label style="color: var(--accent-solid);">Owner Password Required</label>
+          <input type="password" id="login-pass" placeholder="Enter owner password">
+        </div>
+
+        <button type="submit" class="btn-submit" style="margin-top: 1rem;">Continue</button>
       </form>
     </div>
   </div>
 
   <!-- Product Detail Modal -->
-  <div id="detail-modal" class="modal hidden">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal('detail-modal')">✕</button>
-      <img id="detail-img" style="width:100%; height:220px; object-fit:cover; border-radius:8px; margin-bottom:1rem;">
-      <h2 id="detail-title">Product</h2>
-      <div id="detail-price" style="color:var(--accent); font-weight:700; font-size:1.3rem; margin:0.4rem 0;"></div>
-      <p id="detail-desc" style="color:var(--text-muted); font-size:0.95rem; line-height:1.4; margin-bottom:1rem;"></p>
-      
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-        <div class="qty-picker">
-          <button class="qty-btn" onclick="adjustDetailQty(-1)">-</button>
-          <span id="detail-qty-val" style="padding:0 0.5rem;">1</span>
-          <button class="qty-btn" onclick="adjustDetailQty(1)">+</button>
-        </div>
-        <div id="detail-total-preview" style="font-weight:600;">Total: 0 AED</div>
+  <div id="detail-modal" class="modal-overlay hidden">
+    <div class="fullscreen-modal-box">
+      <div class="modal-split-left">
+        <img id="detail-img" src="" alt="Product Image">
       </div>
+      <div class="modal-split-right">
+        <div>
+          <h1 id="detail-title" style="font-size: 2rem; margin-bottom: 0.5rem; color:#fff; font-weight: 800;"></h1>
+          <div id="detail-price" style="color: var(--accent-solid); font-weight: 800; font-size: 1.8rem; margin-bottom: 1rem;"></div>
+          
+          <!-- Quantity Selector -->
+          <div style="margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.8rem;">
+            <label style="margin: 0;">Quantity:</label>
+            <div class="qty-picker">
+              <button class="qty-btn" onclick="adjustDetailQty(-1)">-</button>
+              <span id="detail-qty-val" class="qty-num">1</span>
+              <button class="qty-btn" onclick="adjustDetailQty(1)">+</button>
+            </div>
+            <span id="detail-total-preview" style="color: var(--cyan-accent); font-weight: 700;"></span>
+          </div>
 
-      <div style="display:flex; gap:0.5rem;">
-        <button class="btn-primary" style="flex:1;" onclick="addSelectedToCart()">🛒 Add To Cart</button>
-        <button class="btn-primary" style="flex:1; background:#10b981;" onclick="startSingleCheckout()">⚡ Buy Now</button>
+          <p id="detail-desc" style="color: #d0d7de; font-size: 1rem; line-height: 1.6; white-space: pre-line;"></p>
+        </div>
+        <div>
+          <div class="modal-actions">
+            <button class="btn-secondary" onclick="addSelectedToCart()">🛒 Add to Cart</button>
+            <button class="btn-primary" onclick="startSingleCheckout()">⚡ Buy Now</button>
+          </div>
+          <button class="btn-secondary" style="width: 100%; margin-top: 0.8rem;" onclick="closeModal('detail-modal')">Close</button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Cart Modal -->
-  <div id="cart-modal" class="modal hidden">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal('cart-modal')">✕</button>
-      <h2>Your Cart</h2>
-      <div id="cart-items-list" style="margin: 1rem 0;"></div>
+  <div id="cart-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h2 style="font-weight: 800; margin-bottom: 1rem;">🛒 Shopping Cart</h2>
+      <div id="cart-items-list"></div>
       
-      <div id="cart-summary-block" class="hidden" style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
-        <span>Total Price:</span>
-        <strong id="cart-total-price" style="color:var(--accent); font-size:1.2rem;">0 AED</strong>
+      <div id="cart-summary-block" class="cart-summary hidden">
+        <span>Total Amount:</span>
+        <span id="cart-total-price" style="color: var(--accent-solid);">0.00 AED</span>
       </div>
-      
-      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-        <button onclick="clearCart()" style="background:none; border:1px solid var(--border); color:var(--text-muted); padding:0.5rem 1rem;">Clear</button>
-        <button id="btn-cart-checkout" class="btn-primary" style="flex:1;" onclick="startCartCheckout()">Proceed to Checkout</button>
+
+      <div class="modal-actions" style="margin-top: 1.2rem;">
+        <button class="btn-secondary" onclick="closeModal('cart-modal')">Close</button>
+        <button class="btn-delete" onclick="clearCart()">Clear All</button>
+        <button id="btn-cart-checkout" class="btn-primary" onclick="startCartCheckout()">Buy Now</button>
       </div>
     </div>
   </div>
 
   <!-- Wishlist Modal -->
-  <div id="wishlist-modal" class="modal hidden">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal('wishlist-modal')">✕</button>
-      <h2>Wishlist</h2>
-      <div id="wishlist-items-list" style="margin: 1rem 0;"></div>
+  <div id="wishlist-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h2 style="font-weight: 800; margin-bottom: 1rem;">❤️ Your Saved Items</h2>
+      <div id="wishlist-items-list"></div>
+      <div class="modal-actions" style="margin-top: 1.2rem;">
+        <button class="btn-secondary" style="width: 100%;" onclick="closeModal('wishlist-modal')">Close</button>
+      </div>
     </div>
   </div>
 
-  <!-- Checkout Step 1 Modal -->
-  <div id="checkout-step1-modal" class="modal hidden">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal('checkout-step1-modal')">✕</button>
-      <h2>Checkout Notice</h2>
-      <p style="color:var(--text-muted); margin: 1rem 0; line-height: 1.5;">
-        Orders are processed live and fulfilled in Abu Dhabi / Ruwais region. Ensure your email and optional WhatsApp number are valid so we can coordinate local delivery or print specifications.
-      </p>
-      <button class="btn-primary" style="width:100%;" onclick="goToCheckoutStep2()">Confirm & Continue →</button>
+  <!-- Checkout Step 1: WhatsApp Payment Info -->
+  <div id="checkout-step1-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h2 style="font-weight: 800;">📱 Order & WhatsApp Info</h2>
+      <div class="notice-box">
+        <strong>Payment & Order Instructions:</strong><br>
+        Please contact me on WhatsApp to confirm order details and arrange cash payment!
+        <a href="https://wa.me/971542372744" target="_blank" class="btn-whatsapp">
+          💬 Contact Me on WhatsApp (+971 54 237 2744)
+        </a>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('checkout-step1-modal')">Cancel</button>
+        <button class="btn-primary" onclick="goToCheckoutStep2()">Continue to Form 🚀</button>
+      </div>
     </div>
   </div>
 
-  <!-- Checkout Step 2 Modal -->
-  <div id="checkout-step2-modal" class="modal hidden">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal('checkout-step2-modal')">✕</button>
-      <h2>Finalizing Order</h2>
-      <form onsubmit="handleFinalOrder(event)" style="margin-top:1rem;">
-        <label>Your Name</label>
-        <input type="text" id="cust-name" required placeholder="John Doe">
-
-        <label>Email Address</label>
-        <input type="email" id="cust-email" required placeholder="name@domain.com">
-
-        <label>WhatsApp Number (Optional)</label>
-        <input type="tel" id="cust-whatsapp" placeholder="+971 ...">
-
-        <label>Items Summary</label>
-        <input type="text" id="cust-items-summary" readonly style="opacity:0.6;">
-
-        <label>Total Payment Required</label>
-        <input type="text" id="cust-pay" readonly style="opacity:0.6; color:var(--accent); font-weight:bold;">
-
-        <button type="submit" id="btn-order-submit" class="btn-primary" style="width:100%; background:#10b981;">Submit Order 🚀</button>
+  <!-- Checkout Step 2: Confirmation -->
+  <div id="checkout-step2-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h2 style="font-weight: 800; margin-bottom: 1rem;">Confirm Order Details</h2>
+      <form onsubmit="handleFinalOrder(event)">
+        <div class="form-group">
+          <label>Your Email Address</label>
+          <input type="email" id="cust-email" required placeholder="Enter your email address">
+        </div>
+        <div class="form-group">
+          <label>Your Full Name</label>
+          <input type="text" id="cust-name" required placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp Number <span style="text-transform: none; opacity: 0.7; font-weight: normal;">(Optional)</span></label>
+          <input type="tel" id="cust-whatsapp" placeholder="e.g., +971 50 123 4567">
+        </div>
+        <div class="form-group">
+          <label>Order Item Summary</label>
+          <input type="text" id="cust-items-summary" readonly>
+        </div>
+        <div class="form-group">
+          <label>Total Payment Required (AED)</label>
+          <input type="text" id="cust-pay" readonly>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('checkout-step2-modal')">Back</button>
+          <button type="submit" id="btn-order-submit" class="btn-primary">Submit Order 🚀</button>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- Final Confirmation Modal -->
-  <div id="final-modal" class="modal hidden">
-    <div class="modal-content" style="text-align:center;">
-      <button class="modal-close" onclick="closeModal('final-modal')">✕</button>
-      <h2 style="font-size:2rem; margin-bottom:0.5rem;">🎉 Order Received!</h2>
-      <p style="color:var(--text-muted); margin-bottom:1.5rem;">Your order request has been submitted directly to Pirint Lab. We will reach out shortly to process your print.</p>
-      <button class="btn-primary" onclick="closeModal('final-modal')">Done</button>
+  <!-- Order Success Modal -->
+  <div id="final-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="text-align: center;">
+      <h2 style="color: var(--accent-solid); font-weight: 800; font-size: 1.8rem; margin-bottom: 0.5rem;">🎉 Order Submitted!</h2>
+      <p style="margin: 1.2rem 0; line-height: 1.6; color: var(--text-muted);">
+        Your order has been recorded! Prints usually take <strong>2–5 days</strong>. Feel free to send a message on WhatsApp for progress updates!
+      </p>
+      <button class="btn-primary" style="width:100%;" onclick="closeModal('final-modal')">Great!</button>
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCztdHa4nbFm-4myP-g_kVDgnF1wqBGTXc",
+      authDomain: "pirint-lab.firebaseapp.com",
+      databaseURL: "https://pirint-lab-default-rtdb.firebaseio.com",
+      projectId: "pirint-lab",
+      storageBucket: "pirint-lab.firebasestorage.app",
+      messagingSenderId: "758758939476",
+      appId: "1:758758939476:web:6524190b95ade05ab186c1"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const OWNER_EMAIL = "shafaynext@gmail.com";
+    const ALLOWED_PASSWORDS = ["159357", "boing737max"];
+
+    let isOwner = false;
+    let currentUserEmail = "";
+    let products = [];
+    let cart = JSON.parse(localStorage.getItem('store_cart')) || [];
+    let wishlist = JSON.parse(localStorage.getItem('store_wishlist')) || [];
+    
+    let selectedProduct = null;
+    let detailQty = 1;
+    let checkoutItemData = null;
+
+    window.onload = function() {
+      const savedUser = localStorage.getItem('logged_user');
+      if (savedUser) {
+        currentUserEmail = savedUser;
+        if (savedUser === OWNER_EMAIL) {
+          isOwner = true;
+          document.getElementById('admin-panel').style.display = "block";
+        }
+        document.getElementById('role-indicator').innerText = currentUserEmail;
+        closeModal('login-modal');
+      }
+
+      db.ref('products').on('value', (snapshot) => {
+        const data = snapshot.val();
+        products = [];
+        if (data) {
+          Object.keys(data).forEach(key => {
+            products.push({ id: key, ...data[key] });
+          });
+        }
+        renderProducts();
+      });
+
+      updateCartUI();
+      updateWishlistUI();
+    };
+
+    function openLoginModal() {
+      document.getElementById('login-modal').classList.remove('hidden');
+    }
+
+    function checkLoginEmail() {
+      const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
+      const passGroup = document.getElementById('pass-group');
+      if (emailInput === OWNER_EMAIL) {
+        passGroup.classList.remove('hidden');
+      } else {
+        passGroup.classList.add('hidden');
+      }
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value.trim().toLowerCase();
+      const pass = document.getElementById('login-pass').value;
+
+      if (email === OWNER_EMAIL) {
+        if (ALLOWED_PASSWORDS.includes(pass)) {
+          isOwner = true;
+          currentUserEmail = email;
+          localStorage.setItem('logged_user', email);
+          document.getElementById('role-indicator').innerText = "Owner (" + email + ")";
+          document.getElementById('admin-panel').style.display = "block";
+          closeModal('login-modal');
+        } else {
+          alert("Incorrect owner password!");
+          return;
+        }
+      } else {
+        isOwner = false;
+        currentUserEmail = email;
+        localStorage.setItem('logged_user', email);
+        document.getElementById('role-indicator').innerText = email;
+        document.getElementById('admin-panel').style.display = "none";
+        closeModal('login-modal');
+      }
+      renderProducts();
+    }
+
+    function handleAddProduct(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btn-add-prod');
+      btn.innerText = "Processing Image & Uploading...";
+      btn.disabled = true;
+
+      const title = document.getElementById('prod-title').value;
+      const price = parseFloat(document.getElementById('prod-price').value).toFixed(2);
+      const desc = document.getElementById('prod-desc').value;
+      const fileInput = document.getElementById('prod-img');
+
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          img.src = e.target.result;
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 450; 
+            const scaleFactor = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleFactor;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+            db.ref('products').push({
+              title: title,
+              price: price,
+              desc: desc,
+              image: compressedDataUrl
+            }).then(() => {
+              btn.innerText = "🚀 Publish Product Live";
+              btn.disabled = false;
+              event.target.reset();
+            }).catch(err => {
+              btn.innerText = "🚀 Publish Product Live";
+              btn.disabled = false;
+              alert("Error adding product: " + err.message);
+            });
+          };
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function deleteProduct(id, event) {
+      event.stopPropagation();
+      if (confirm("Delete this product permanently?")) {
+        db.ref('products/' + id).remove();
+      }
+    }
+
+    function toggleWishlist(product, event) {
+      if (event) event.stopPropagation();
+      const index = wishlist.findIndex(item => item.id === product.id);
+      if (index > -1) {
+        wishlist.splice(index, 1);
+      } else {
+        wishlist.push(product);
+      }
+      localStorage.setItem('store_wishlist', JSON.stringify(wishlist));
+      updateWishlistUI();
+      renderProducts();
+    }
+
+    function updateWishlistUI() {
+      document.getElementById('wishlist-count').innerText = wishlist.length;
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('product-grid');
+      grid.innerHTML = '';
+
+      if (products.length === 0) {
+        grid.innerHTML = '<p style="color: #fff; grid-column: 1/-1; text-align: center; padding: 2rem;">No products loaded yet.</p>';
+        return;
+      }
+
+      products.forEach(p => {
+        const isWishlisted = wishlist.some(item => item.id === p.id);
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.onclick = () => openDetailModal(p);
+
+        card.innerHTML = `
+          <div class="product-img-wrapper">
+            <button class="btn-wishlist-toggle ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(${JSON.stringify(p).replace(/"/g, '&quot;')}, event)">
+              ${isWishlisted ? '❤️' : '🤍'}
+            </button>
+            <img src="${p.image}" class="product-img" alt="${p.title}">
+          </div>
+          <div class="product-info">
+            <div class="product-title">${p.title}</div>
+            <div class="product-price">${p.price} AED</div>
+            <div class="card-actions-row">
+              <button class="btn-card-cart" onclick="event.stopPropagation(); addToCart(${JSON.stringify(p).replace(/"/g, '&quot;')}, 1)">🛒 Add</button>
+              ${isOwner ? `<button class="btn-delete" onclick="deleteProduct('${p.id}', event)">Delete</button>` : ''}
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    /* Cart & Quantity Operations */
+    function addToCart(product, quantity = 1) {
+      const existing = cart.find(item => item.id === product.id);
+      if (existing) {
+        existing.qty = (existing.qty || 1) + quantity;
+      } else {
+        cart.push({ ...product, qty: quantity });
+      }
+      localStorage.setItem('store_cart', JSON.stringify(cart));
+      updateCartUI();
+    }
+
+    function addSelectedToCart() {
+      if (selectedProduct) {
+        addToCart(selectedProduct, detailQty);
+        closeModal('detail-modal');
+      }
+    }
+
+    function changeCartQty(index, delta) {
+      if (!cart[index].qty) cart[index].qty = 1;
+      cart[index].qty += delta;
+      if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+      }
+      localStorage.setItem('store_cart', JSON.stringify(cart));
+      updateCartUI();
+      openCartModal();
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      localStorage.setItem('store_cart', JSON.stringify(cart));
+      updateCartUI();
+      openCartModal();
+    }
+
+    function clearCart() {
+      cart = [];
+      localStorage.removeItem('store_cart');
+      updateCartUI();
+      openCartModal();
+    }
+
+    function updateCartUI() {
+      const totalCount = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+      document.getElementById('cart-count').innerText = totalCount;
+    }
+
+    function openCartModal() {
+      const list = document.getElementById('cart-items-list');
+      const summaryBlock = document.getElementById('cart-summary-block');
+      const checkoutBtn = document.getElementById('btn-cart-checkout');
+
+      if (cart.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-muted); text-align:center; padding: 1rem 0;">Your cart is empty.</p>';
+        summaryBlock.classList.add('hidden');
+        checkoutBtn.style.display = 'none';
+      } else {
+        let grandTotal = 0;
+        list.innerHTML = cart.map((item, i) => {
+          const qty = item.qty || 1;
+          const itemTotal = parseFloat(item.price) * qty;
+          grandTotal += itemTotal;
+          return `
+            <div class="cart-item-row">
+              <div class="cart-item-info">
+                <img src="${item.image}" class="cart-item-img">
+                <div>
+                  <div class="cart-item-title">${item.title}</div>
+                  <div class="cart-item-price">${itemTotal.toFixed(2)} AED (${item.price} ea)</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <div class="qty-picker">
+                  <button class="qty-btn" onclick="changeCartQty(${i}, -1)">-</button>
+                  <span class="qty-num">${qty}</span>
+                  <button class="qty-btn" onclick="changeCartQty(${i}, 1)">+</button>
+                </div>
+                <button class="btn-remove-single" onclick="removeFromCart(${i})" title="Remove">✕</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('cart-total-price').innerText = grandTotal.toFixed(2) + " AED";
+        summaryBlock.classList.remove('hidden');
+        checkoutBtn.style.display = 'inline-block';
+      }
+      document.getElementById('cart-modal').classList.remove('hidden');
+    }
+
+    function openWishlistModal() {
+      const list = document.getElementById('wishlist-items-list');
+      if (wishlist.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-muted); text-align:center; padding: 1rem 0;">No items saved in wishlist.</p>';
+      } else {
+        list.innerHTML = wishlist.map((item) => `
+          <div class="cart-item-row">
+            <div class="cart-item-info">
+              <img src="${item.image}" class="cart-item-img">
+              <div>
+                <div class="cart-item-title">${item.title}</div>
+                <div class="cart-item-price">${item.price} AED</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.4rem;">
+              <button class="btn-card-cart" onclick="addToCart(${JSON.stringify(item).replace(/"/g, '&quot;')}, 1)">🛒 Add</button>
+              <button class="btn-remove-single" onclick="toggleWishlist(${JSON.stringify(item).replace(/"/g, '&quot;')}); openWishlistModal();">✕</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('wishlist-modal').classList.remove('hidden');
+    }
+
+    function openDetailModal(product) {
+      selectedProduct = product;
+      detailQty = 1;
+      document.getElementById('detail-img').src = product.image;
+      document.getElementById('detail-title').innerText = product.title;
+      document.getElementById('detail-price').innerText = product.price + " AED";
+      document.getElementById('detail-desc').innerText = product.desc;
+      document.getElementById('detail-qty-val').innerText = detailQty;
+      updateDetailPricePreview();
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function adjustDetailQty(delta) {
+      detailQty += delta;
+      if (detailQty < 1) detailQty = 1;
+      document.getElementById('detail-qty-val').innerText = detailQty;
+      updateDetailPricePreview();
+    }
+
+    function updateDetailPricePreview() {
+      if (selectedProduct) {
+        const total = (parseFloat(selectedProduct.price) * detailQty).toFixed(2);
+        document.getElementById('detail-total-preview').innerText = `Total: ${total} AED`;
+      }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    /* Checkout Operations */
+    function startSingleCheckout() {
+      checkoutItemData = { type: 'single', item: selectedProduct, qty: detailQty };
+      closeModal('detail-modal');
+      document.getElementById('checkout-step1-modal').classList.remove('hidden');
+    }
+
+    function startCartCheckout() {
+      if (cart.length === 0) return;
+      checkoutItemData = { type: 'cart', items: [...cart] };
+      closeModal('cart-modal');
+      document.getElementById('checkout-step1-modal').classList.remove('hidden');
+    }
+
+    function goToCheckoutStep2() {
+      closeModal('checkout-step1-modal');
+      
+      let summaryText = "";
+      let totalPrice = 0;
+
+      if (checkoutItemData.type === 'single') {
+        const qty = checkoutItemData.qty || 1;
+        summaryText = `${checkoutItemData.item.title} (${qty}x)`;
+        totalPrice = parseFloat(checkoutItemData.item.price) * qty;
+      } else {
+        summaryText = checkoutItemData.items.map(i => `${i.title} (${i.qty || 1}x)`).join(', ');
+        totalPrice = checkoutItemData.items.reduce((sum, item) => sum + (parseFloat(item.price) * (item.qty || 1)), 0);
+      }
+
+      if (currentUserEmail) {
+        document.getElementById('cust-email').value = currentUserEmail;
+      }
+
+      document.getElementById('cust-items-summary').value = summaryText;
+      document.getElementById('cust-pay').value = totalPrice.toFixed(2) + " AED";
+      document.getElementById('checkout-step2-modal').classList.remove('hidden');
+    }
+
+    function handleFinalOrder(event) {
+      event.preventDefault();
+      const email = document.getElementById('cust-email').value;
+      const name = document.getElementById('cust-name').value;
+      const whatsapp = document.getElementById('cust-whatsapp').value;
+      const itemsSummary = document.getElementById('cust-items-summary').value;
+      const payConfirm = document.getElementById('cust-pay').value;
+      const submitBtn = document.getElementById('btn-order-submit');
+
+      submitBtn.innerText = "Submitting...";
+      submitBtn.disabled = true;
+
+      const formData = new FormData();
+      formData.append('Customer Email', email);
+      formData.append('Customer Full Name', name);
+      if (whatsapp.trim() !== "") {
+        formData.append('Customer WhatsApp (Optional)', whatsapp);
+      }
+      formData.append('Ordered Items', itemsSummary);
+      formData.append('Total Payment Required', payConfirm);
+      formData.append('_subject', `New 3D Print Order from ${name}`);
+      formData.append('_captcha', 'false');
+
+      fetch("https://formsubmit.co/ajax/shafaynext@gmail.com", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        submitBtn.innerText = "Submit Order 🚀";
+        submitBtn.disabled = false;
+        closeModal('checkout-step2-modal');
+        if (checkoutItemData.type === 'cart') {
+          clearCart();
+        }
+        document.getElementById('final-modal').classList.remove('hidden');
+      })
+      .catch(error => {
+        submitBtn.innerText = "Submit Order 🚀";
+        submitBtn.disabled = false;
+        alert("Submission failed. Please check your connection.");
+      });
+    }
+  </script>
 </body>
 </html>
