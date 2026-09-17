@@ -53,7 +53,6 @@ window.onload = function() {
   updateWishlistUI();
 };
 
-/* Modal Helpers */
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) modal.classList.add('hidden');
@@ -64,9 +63,7 @@ function openModal(modalId) {
   if (modal) modal.classList.remove('hidden');
 }
 
-function openLoginModal() {
-  openModal('login-modal');
-}
+function openLoginModal() { openModal('login-modal'); }
 
 function checkLoginEmail() {
   const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
@@ -90,10 +87,8 @@ function handleLogin(event) {
       isOwner = true;
       currentUserEmail = email;
       localStorage.setItem('logged_user', email);
-      const roleInd = document.getElementById('role-indicator');
-      if (roleInd) roleInd.innerText = "Owner (" + email + ")";
-      const adminPanel = document.getElementById('admin-panel');
-      if (adminPanel) adminPanel.style.display = "block";
+      document.getElementById('role-indicator').innerText = "Owner (" + email + ")";
+      document.getElementById('admin-panel').style.display = "block";
       closeModal('login-modal');
     } else {
       alert("Incorrect owner password!");
@@ -103,10 +98,8 @@ function handleLogin(event) {
     isOwner = false;
     currentUserEmail = email;
     localStorage.setItem('logged_user', email);
-    const roleInd = document.getElementById('role-indicator');
-    if (roleInd) roleInd.innerText = email;
-    const adminPanel = document.getElementById('admin-panel');
-    if (adminPanel) adminPanel.style.display = "none";
+    document.getElementById('role-indicator').innerText = email;
+    document.getElementById('admin-panel').style.display = "none";
     closeModal('login-modal');
   }
   renderProducts();
@@ -168,7 +161,6 @@ function deleteProduct(id, event) {
   }
 }
 
-/* Helper lookups to avoid JSON inside HTML attributes */
 function toggleWishlistById(id, event) {
   if (event) event.stopPropagation();
   const product = products.find(p => p.id === id) || wishlist.find(p => p.id === id);
@@ -211,7 +203,7 @@ function renderProducts() {
   grid.innerHTML = '';
 
   if (products.length === 0) {
-    grid.innerHTML = '<p style="color: #fff; grid-column: 1/-1; text-align: center; padding: 2rem;">No products loaded yet.</p>';
+    grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2rem;">No products available right now.</p>';
     return;
   }
 
@@ -241,7 +233,6 @@ function renderProducts() {
   });
 }
 
-/* Cart & Quantity Operations */
 function addSelectedToCart() {
   if (selectedProduct) {
     addToCartById(selectedProduct.id, detailQty);
@@ -308,10 +299,10 @@ function openCartModal() {
           <div style="display:flex; align-items:center; gap:0.6rem;">
             <div class="qty-picker">
               <button class="qty-btn" onclick="changeCartQty(${i}, -1)">-</button>
-              <span class="qty-num">${qty}</span>
+              <span style="font-size:0.9rem;">${qty}</span>
               <button class="qty-btn" onclick="changeCartQty(${i}, 1)">+</button>
             </div>
-            <button class="btn-remove-single" onclick="removeFromCart(${i})" title="Remove">✕</button>
+            <button class="btn-remove-single" onclick="removeFromCart(${i})">✕</button>
           </div>
         </div>
       `;
@@ -377,7 +368,6 @@ function updateDetailPricePreview() {
   }
 }
 
-/* Checkout Operations */
 function startSingleCheckout() {
   checkoutItemData = { type: 'single', item: selectedProduct, qty: detailQty };
   closeModal('detail-modal');
